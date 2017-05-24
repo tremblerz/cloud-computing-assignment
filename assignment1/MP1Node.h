@@ -20,7 +20,7 @@
  */
 #define TREMOVE 20
 #define TFAIL 5
-
+#define INSPECT_NODE 6
 /*
  * Note: You can change/add any functions in MP1Node.{h,cpp}
  */
@@ -29,8 +29,9 @@
  * Message Types
  */
 enum MsgTypes{
-    JOINREQ,
     JOINREP,
+    JOINREQ,
+    GOSSIP,
     DUMMYLASTMSGTYPE
 };
 
@@ -54,6 +55,7 @@ private:
 	Log *log;
 	Params *par;
 	Member *memberNode;
+	vector<int> failedID;
 	char NULLADDR[6];
 
 public:
@@ -75,6 +77,15 @@ public:
 	Address getJoinAddress();
 	void initMemberListTable(Member *memberNode);
 	void printAddress(Address *addr);
+	void updateMPTable(Address *addr, long heartbeat);
+	void sendJoinRep(Address *addr);
+	Address * ToAddress(int id, short port);
+	void checkAndUpdateEntry(Address*, long int, long int);
+	void sendGossip(int targetID);
+	void printTable();
+	void softDelete(vector<MemberListEntry>::iterator it);
+	std::vector<MemberListEntry>::iterator hardDelete(vector<MemberListEntry>::iterator it);
+	bool outdatedEntry(int id);
 	virtual ~MP1Node();
 };
 
