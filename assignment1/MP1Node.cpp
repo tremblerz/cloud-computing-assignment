@@ -103,7 +103,7 @@ int MP1Node::initThisNode(Address *joinaddr) {
 	memberNode->inGroup = false;
     // node is up!
 	memberNode->nnb = 0;
-	memberNode->heartbeat = 0;
+	memberNode->heartbeat = 500;
 	memberNode->pingCounter = TFAIL;
 	memberNode->timeOutCounter = -1;
     initMemberListTable(memberNode);
@@ -311,7 +311,8 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
     response = (MessageHdr *)data;
     responder = (Address *)((char *)(response+1));
     if (response->msgType==JOINREQ) {
-        long heartbeat = (long)*((char *)(response+1) + 1 + sizeof(memberNode->addr.addr));
+        long heartbeat = *(long *)((char *)(response+1) + 1 + sizeof(memberNode->addr.addr));
+        //cout<<heartbeat<<endl;
         updateMPTable(responder, heartbeat);
         sendJoinRep(responder);
     }
@@ -321,13 +322,13 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
         short port;
         long heartbeat;
         for (int i = 0; i < tableSize; ++i) {
-            id = (int)*((char *)(response) + offset);
+            id = *(int *)((char *)(response) + offset);
             offset += sizeof(int);
-            port = (short)*((char *)(response) + offset);
+            port = *(short *)((char *)(response) + offset);
             offset += sizeof(short);
-            heartbeat = (long)*((char *)(response) + offset);
+            heartbeat = *(long *)((char *)(response) + offset);
             offset += sizeof(long);
-            //:ALERT: timestamp = (long)*((char *)(response) + offset);
+            //:ALERT: timestamp = *(long *)((char *)(response) + offset);
             offset += sizeof(long);
 
             updateMPTable(ToAddress(id, port), heartbeat);
@@ -340,13 +341,13 @@ bool MP1Node::recvCallBack(void *env, char *data, int size ) {
         short port;
         long timestamp, heartbeat;
         for (int i = 0; i < tableSize; ++i) {
-            id = (int)*((char *)(response) + offset);
+            id = *(int *)((char *)(response) + offset);
             offset += sizeof(int);
-            port = (short)*((char *)(response) + offset);
+            port = *(short *)((char *)(response) + offset);
             offset += sizeof(short);
-            heartbeat = (long)*((char *)(response) + offset);
+            heartbeat = *(long *)((char *)(response) + offset);
             offset += sizeof(long);
-            timestamp = (long)*((char *)(response) + offset);
+            timestamp = *(long *)((char *)(response) + offset);
             //cout<<timestamp
             offset += sizeof(long);
             checkAndUpdateEntry(ToAddress(id, port), heartbeat, timestamp);
@@ -400,7 +401,7 @@ void MP1Node::nodeLoopOps() {
 
     //cout<<*(int *)&memberNode->addr.addr[0]<<endl;
     // Increment timestamp
-    printTable();
+    //printTable();
     memberNode->memberList.begin()->setheartbeat(memberNode->memberList.begin()->getheartbeat()+1);
     memberNode->memberList.begin()->settimestamp(par->getcurrtime());
     //cout<<"id is "<<memberNode->memberList.begin()->id<<" and original is "<<(int)(memberNode->addr.addr[0])<<endl;
